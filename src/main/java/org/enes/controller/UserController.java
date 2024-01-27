@@ -86,4 +86,14 @@ public class UserController {
     public ResponseEntity<Optional<RegisterResponseDto>> findByEmail(String email){
         return ResponseEntity.ok(userService.findByEmail(email));
     }
+
+    @GetMapping("/find-by-password-lenght")
+    public ResponseEntity<List<User>> findByPasswordLengthGreaterThan(int passwordLength){
+        return ResponseEntity.ok(userService.findByPasswordLengthGreaterThan(passwordLength));
+    }
+
+    @GetMapping("/find-by-email-ending-with")
+    public ResponseEntity<List<User>> findByEmailEndingWith(String email){
+        return ResponseEntity.ok(userService.findByEmailEndingWith(email));
+    }
 }

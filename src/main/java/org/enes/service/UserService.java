@@ -188,4 +188,12 @@ public class UserService implements ICrudService<User, Long> {
         return Optional.ofNullable(UserMapper.INSTANCE.fromUserDtoToRegisterResponse(user.get()));
 
     }
+
+    public List<User> findByPasswordLengthGreaterThan(int passwordLength){
+        return userRepository.findByPasswordLengthGreaterThan(passwordLength);
+    }
+
+    public List<User> findByEmailEndingWith(String email){
+        return userRepository.findByEmailEndingWith(email);
+    }
 }

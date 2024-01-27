@@ -9,6 +9,7 @@ import org.enes.entity.User;
 import org.enes.mapper.UserMapper;
 import org.enes.repository.UserRepository;
 import org.enes.utility.EStatus;
+import org.enes.utility.EUserType;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -69,20 +70,20 @@ public class UserService implements ICrudService<User, Long> {
                 .password(password)
                 .rePassword(rePassword)
                 .build();
+        if (userRepository.existsByEmailContainingIgnoreCase(user.getEmail())){
+            throw new RuntimeException("Email adresi zaten kayıtlı.");
+        }
         // " " -> isBlank = true, " " isEmpty = false çünkü boşlukta bir karakter
         if (!password.equals(rePassword) || password.isBlank()){
             throw new RuntimeException("Şifreler aynı değildir.");
         }
 
-        return userRepository.save(user);
-    }
-
-    public User login(String email, String password){
-        Optional<User> user = userRepository.findByEmailAndPassword(email, password);
-        if (user.isEmpty()){
-            throw  new RuntimeException("Kullanıcı bilgileri yanlış.");
+        if (user.getEmail().equals("ba.admin@email.com")){
+            user.setStatus(EStatus.ACTIVE);
+            user.setUserType(EUserType.ADMIN);
         }
-        return user.get();
+
+        return userRepository.save(user);
     }
 
     public RegisterResponseDto registerDto(RegisterRequestDto dto) {
@@ -93,9 +94,18 @@ public class UserService implements ICrudService<User, Long> {
                 .password(dto.getPassword())
                 .rePassword(dto.getRePassword())
                 .build();
+        if (userRepository.existsByEmailContainingIgnoreCase(user.getEmail())){
+            throw new RuntimeException("Email adresi zaten kayıtlı.");
+        }
         if (!user.getPassword().equals(user.getRePassword()) || user.getPassword().isBlank()){
             throw new RuntimeException("Şifreler aynı değildir.");
         }
+
+        if (user.getEmail().equals("ba.admin@email.com")){
+            user.setStatus(EStatus.ACTIVE);
+            user.setUserType(EUserType.ADMIN);
+        }
+
         userRepository.save(user);
         return RegisterResponseDto.builder()
                 .name(user.getName())
@@ -107,11 +117,28 @@ public class UserService implements ICrudService<User, Long> {
 
     public RegisterResponseDto registerMapper(RegisterRequestDto dto) {
         User user = UserMapper.INSTANCE.fromRegisterRequestDtoToUser(dto);
+        if (userRepository.existsByEmailContainingIgnoreCase(user.getEmail())){
+            throw new RuntimeException("Email adresi zaten kayıtlı.");
+        }
         if (!user.getPassword().equals(user.getRePassword()) || user.getPassword().isBlank()){
             throw new RuntimeException("Şifreler aynı değildir.");
         }
+
+        if (user.getEmail().equals("ba.admin@email.com")){
+            user.setStatus(EStatus.ACTIVE);
+            user.setUserType(EUserType.ADMIN);
+        }
+
         userRepository.save(user);
         return UserMapper.INSTANCE.fromUserDtoToRegisterResponse(user);
+    }
+
+    public User login(String email, String password){
+        Optional<User> user = userRepository.findByEmailAndPassword(email, password);
+        if (user.isEmpty()){
+            throw  new RuntimeException("Kullanıcı bilgileri yanlış.");
+        }
+        return user.get();
     }
 
     public LoginResponseDto loginDto(LoginRequestDto dto) {
